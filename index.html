@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1">
+	<link href="https://fonts.googleapis.com/css?family=Quicksand" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="./data/css/style.css">
+	<link rel="stylesheet" type="text/css" href="data/css/design.css">
+	<title>AR sample</title>
+
+	<script type="text/javascript">
+
+		let menu;
+		let is_menu_open = false;
+		let btn;
+
+		window.onload = () => {
+			menu = document.getElementById("menu_wrapper");
+			btn = document.getElementById("btn");
+			menu.style.visibility = 'hidden';
+			menu.style.bottom = btn.style.height;
+		}
+
+		let click_btn = () => {
+			if(menu.style.visibility == 'hidden'){
+				menu.style.visibility = 'visible';
+			}else{
+				menu.style.visibility = 'hidden';
+			}
+		}
+
+		</script>
+
+</head>
+<body>
+
+
+	<script src='vendor/three.min.js'></script>
+	<script src="vendor/OBJLoader.js"></script>
+	<script src='vendor/ar.min.js'></script>
+	<script src="vendor/Tween.js"></script>
+
+
+	<div class="wrapper">
+	<div class="btn_wrapper">
+		<button id="btn" onclick="click_btn()"><img id="arrow" src="data/images/arrow.png"></button>
+	</div>
+	<div id="menu_wrapper">
+		<div id="menu">
+		<h1>rings</h1>			
+			<div class="clocks">
+
+				<button class="clock" onclick="load_obj(1)"><img src="Accessories/wrist_watch/wrist_watch.png"></button>
+				<button class="clock" onclick="load_obj(2)"><img src="Accessories/ring/ring.png"></button>
+				<button class="clock" onclick="load_obj(3)"><img src="Accessories/rosary/rosary.png"></button>
+				<button class="clock" onclick="load_obj(4)"><img src="Accessories/finger_ring/finger_ring.png"></button>
+				<button class="clock" onclick="load_obj(5)"><img src="Accessories/wedding_ring/wedding_ring.png"></button>
+			</div>
+			<h1>color</h1>
+			<div class="colors">
+
+				<div class="color red" onclick="change_color(1)"></div>
+				<div class="color black" onclick="change_color(2)"></div>
+				<div class="color gold" onclick="change_color(3)"></div>
+				<div class="color darkblue" onclick="change_color(4)"></div>
+				<div class="color silver" onclick="change_color(5)"></div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<script type="text/javascript">
+
+		// --------------three.jsの設定------------------
+		// シーン作成
+		const scene = new THREE.Scene();
+
+		//レンダラ作成
+		const renderer = new THREE.WebGLRenderer({
+			//antialias: true,//アンチエイリアス
+			alpha: true//canvasで透明度を扱えるようにする
+		});
+		renderer.setClearColor(new THREE.Color("black"), 0);//レンダラ背景色
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.domElement.style.position = "absolute";
+		renderer.domElement.style.top = "0px";
+		renderer.domElement.style.left = "0px";
+		document.body.appendChild(renderer.domElement);
+
+		// レンダリングループ作成
+		let onRenderFcts = [];
+
+		//カメラ作成
+		let camera = new THREE.PerspectiveCamera();
+		camera.far = 0.5;
+		//camera.near = 0.1;
+		// camera.updateProjectionMatrix();
+		// scene.add(camera);
+
+		//光源作成
+		const light = new THREE.DirectionalLight(0xffffff); //光源の色は白
+		light.position.set(0, 0, 2);
+		scene.add(light);
+
+		//クリッピング作成
+		let globalPlane = new THREE.Plane( new THREE.Vector3(0, 0, 1), 6);
+		renderer.clippingPlanes.push(globalPlane);
+		//クリッピングセットアップ
+		renderer.localClippingEnabled = true;
+
+		//-----------マーカートラッカー定義--------------
+
+		const source = new THREEx.ArToolkitSource({
+			sourceType: "webcam",//カメラを使う
+		});
+		source.init(function onReady(){
+			onResize();
+		});
+
+		//------------マーカー検出設定-------------------
+
+		const context = new THREEx.ArToolkitContext({
+			debug: false,
+			cameraParametersUrl: "data/para/camera_para.dat", //カメラパラメータファイル
+			detectionMode: "mono",//いろんなタイプのマーカが扱えそう
+			maxDetectionRate: 40,//検出レート
+			canvasWidth: source.parameters.sourceWidth,//検出画像の幅
+			canvasHeight: source.parameters.sourceHeight,//検出画像の高さ
+		});
+		context.init(function onCompleted(){
+			camera.projectionMatrix.copy(context.getProjectionMatrix());
+		});
+
+		//-----------ArToolkitをすべて更新する-----------
+		onRenderFcts.push( () => {
+			if(source.ready === false){ return; }
+			context.update(source.domElement);
+		})
+
+		//------------リサイズ処理----------------------
+
+		window.addEventListener("resize", () => {
+			onResize();
+		})
+
+		function onResize(){
+			source.onResizeElement();
+			source.copyElementSizeTo(renderer.domElement);
+			if(context.arController !== null){
+				source.copyElementSizeTo(context.arController.canvas);
+			}
+		}
+
+    //-----------マーカーコントローラー---------------
+    let markers = new Array(6);
+    for(let i=0; i<markers.length; i++){
+    	markers[i] = new THREE.Group();//マーカーグループを作成
+    	let controls = new THREEx.ArMarkerControls(context, markers[i], {
+    		size: 2.5,//オブジェクトスケール 1/n
+    		type: "pattern", //マーカータイプ
+    		patternUrl: "./marker_ring/m0" + (i+1) + ".patt",//マーカーファイル
+				minConfidence: 0.3,
+    	});
+    	scene.add(markers[i]);//マーカーをシーンに追加
+    }
+
+    //----------objロード---------------------
+    const loader = new THREE.OBJLoader();
+    const tloader = new THREE.TextureLoader();
+    const dial = new THREE.MeshBasicMaterial({
+			map: tloader.load("Accessories/wrist_watch/wrist_watch_design.png")
+				});
+    let loading_obj_name;
+    let rosary_count = 0;
+		
+		function load_obj(obj_num=1){
+			let url;
+			switch(obj_num){
+				case 1:
+					url = "Accessories/wrist_watch/wrist_watch.obj";
+					loading_obj_name = "wrist_watch";
+					break;
+				case 2:
+					url = "Accessories/ring/ring.obj";
+					loading_obj_name = "ring";
+					break;
+				case 3:
+					if(rosary_count < 5){
+						rosary_count += 1;				
+						url = "Accessories/rosary/rosary.obj";
+						loading_obj_name = "rosary";											
+					}else{
+						url = "Accessories/star_ring/star_ring.obj";
+						loading_obj_name = "star_ring";
+					}
+
+					break;
+				case 4:
+					url = "Accessories/finger_ring/finger_ring.obj";
+					loading_obj_name = "finger_ring";
+					break;
+				case 5:
+					url = "Accessories/wedding_ring/wedding_ring.obj";
+					loading_obj_name = "wedding_ring";
+					break;
+			}
+			for(let i=0; i<markers.length; i++){
+					markers[i].remove(markers[i].children[0]);
+				}
+			for(let i=0; i<markers.length; i++){
+				loader.load( url, (obj) => {
+					for(let i = 0; i < obj.children.length; i++){
+						obj.children[i].material = bodyMaterial.silver;
+					}					
+					obj.position.y = -2;
+					obj.rotation.y = -Math.PI / 2;
+					obj.rotation.z = (1/3) * Math.PI * i;
+					markers[i].add(obj);
+				});
+			}
+		}
+
+		for(let i=0; i<markers.length; i++){
+			loader.load('Accessories/wrist_watch/wrist_watch.obj', (obj) => {
+				for(let i = 0; i < obj.children.length; i++){
+					obj.children[i].material = bodyMaterial.red;
+				}
+				obj.position.y = -2;
+				obj.rotation.y = - Math.PI / 2;
+				obj.rotation.z = (1/3) * Math.PI * i;
+				markers[i].add(obj);
+				for(let i=0; i<obj.children.length; i++){
+					if(obj.children[i].name == "const"){
+						obj.children[i].material = dial;
+					}
+				}
+				loading_obj_name = "wrist_watch";
+
+    	});
+		}
+
+		//------------カラー変更-------------------
+		const bodyMaterial = {
+    	red: new THREE.MeshStandardMaterial({
+    		color: 0xaa0000,
+    		metalness: 1,
+    	}),
+    	black: new THREE.MeshStandardMaterial({
+    		color: 0x0f0f0f,
+    		metalness: 1,
+    	}),
+    	gold: new THREE.MeshStandardMaterial({
+    		color: 0xaa9944,
+    		metalness: 1,
+    	}),
+    	darkblue: new THREE.MeshStandardMaterial({
+    		color: 0x214478,
+    		metalness: 1,
+    	}),
+    	silver: new THREE.MeshStandardMaterial({
+    		color: 0xffffff,
+    		metalness: 1,
+    	}),
+    };
+
+		function change_color(color_num){
+			let color;
+			switch(color_num){
+				case 1:
+					color = bodyMaterial.red;
+					break;
+				case 2:
+					color = bodyMaterial.black;
+					break;
+				case 3:
+					color = bodyMaterial.gold;
+					break;
+				case 4:
+					color = bodyMaterial.darkblue;
+					break;
+				case 5:
+					color = bodyMaterial.silver;
+					break;
+			}
+			for(let m=0; m < markers.length; m++){
+				for(let c=0; c<markers[m].children[0].children.length; c++){
+					//console.log(m)
+					markers[m].children[0].children[c].material = color;
+				}
+			}
+			if(loading_obj_name == "wrist_watch"){
+				for(let j=0; j<markers.length; j++){
+					for(let i=0; i<markers[j].children[0].children.length; i++){
+						if(markers[j].children[0].children[i].name == "const"){
+							console.log("const");
+							markers[j].children[0].children[i].material = dial;
+						}
+					}
+				}
+			
+			}
+		}
+
+		//------------オブジェクト変更-------------------
+
+
+		//クリッピングプレーン調節用
+		const clipping_plane_z = 1.2;
+		function update_constant(){
+			let min = 0;
+			let min_dist = 2000;
+			for(let i = 0; i < markers.length; i++){
+				if(markers[i].visible){
+					if(Math.abs(markers[i].getWorldPosition().z) < min_dist){
+						min_dist = Math.abs(markers[i].getWorldPosition().z);
+						min = i;
+					}
+				}
+				markers[i].visible = false;
+			}
+			if(min_dist != 2000){
+				globalPlane.constant = min_dist + clipping_plane_z;
+				// console.log(globalPlane.constant);
+				markers[min].visible = true;
+			}
+		}
+
+		//-------------アニメーション----------------------
+		const tween = () =>{
+			const ini = {rotZ: 0};
+			const val = {rotZ: Math.PI / 6};
+			const target = {rotZ: 6 * Math.PI};
+			const tween = new TWEEN.Tween(val).to(target, 1000)
+			.easing(TWEEN.Easing.Quadratic.InOut)
+			.onUpdate(function(){
+				for(let i = 0; i < markers.length; i++){
+					if(markers[i].visible){
+						markers[i].children[0].rotation.z = val.rotZ;
+					}
+				}
+			})
+			.delay(0)
+			.start()
+		};
+
+		window.addEventListener("mousedown", function(ret) {
+			  let mouseX = ret.clientX;                           // マウスのx座標
+			  let mouseY = ret.clientY;                           // マウスのy座標
+			  mouseX =  (mouseX / window.innerWidth)  * 2 - 1;    // -1 ～ +1 に正規化されたx座標
+			  mouseY = -(mouseY / window.innerHeight) * 2 + 1;    // -1 ～ +1 に正規化されたy座標
+			  const pos = new THREE.Vector3(mouseX, mouseY, 1);     // マウスベクトル
+			  pos.unproject(camera);                              // スクリーン座標系をカメラ座標系に変換
+			  // レイキャスタを作成（始点, 向きのベクトル）
+			  const ray = new THREE.Raycaster(camera.position, pos.sub(camera.position).normalize());
+			  const obj = ray.intersectObjects(scene.children, true);   // レイと交差したオブジェクトの取得
+			  if(obj.length > 0) {                                // 交差したオブジェクトがあれば
+			    tween();// ピックされた対象に応じた処理を実行
+			  }
+			});		
+
+		//-------------レンダリング-----------------------
+		function renderScene(){
+			requestAnimationFrame(renderScene); //ループ要求
+			if(source.ready === false){ // メディアソースの準備確認
+				return; //ループから抜ける
+			}
+			context.update(source.domElement);
+			// console.log("worldPlane z :" + globalPlane.constant);
+			// console.log("duck z :",markers[0].children[0].children[0].getWorldPosition().z)
+
+			//クリッピングプレーンを更新
+			update_constant();
+			// console.log(markers[0].visible);
+			renderer.render(scene, camera);
+		}
+		renderScene();
+
+	</script>
+</body>
+</html>

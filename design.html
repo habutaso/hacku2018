@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1">
+	<link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="data/css/design.css">
+	<link rel="stylesheet" type="text/css" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
+	<script type="text/javascript" src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+	<script type="text/javascript">
+
+		let menu;
+		let is_menu_open = false;
+		let btn;
+
+		let flickity;
+		let elms;
+
+		window.onload = () => {
+			menu = document.getElementById("menu_wrapper");
+			btn = document.getElementById("btn");
+			elms = document.getElementsByClassName("flickity-syncer");
+			flickity = new Flickity(elms[0], { 
+				// contain:true,
+				wrapAround: true,
+				spaceBetween: 10,
+				centeredSlides: true,
+				prevNextButtons: false,
+				pageDots: false,
+
+			});
+			menu.style.visibility = 'hidden';
+		}
+
+		let click_btn = () =>{
+			if(menu.style.visibility === 'hidden'){
+				menu.style.visibility = 'visible';
+			}else if(menu.style.visibility === 'visible'){
+				menu.style.visibility = 'hidden';
+			}
+		}
+
+		</script>
+</head>
+<body>
+	<div class="wrapper">
+	<div class="btn_wrapper">
+		<button id="btn" onclick="click_btn()"><img src="data/images/arrow.png"></button>
+	</div>
+	<div id="menu_wrapper">
+		<div id="menu">
+			<div class="name">name</div>
+			<div class="watch_image"></div>
+			<div class="clocks">
+				<div class="clock"></div>
+				<div class="clock"></div>
+				<div class="clock"></div>
+				<div class="clock"></div>
+			</div>
+		</div>
+	</div>			
+	</div>
+
+</body>
+</html>

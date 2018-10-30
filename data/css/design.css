@@ -1,0 +1,161 @@
+body{
+	margin: 0;
+	font-family: 'Quicksand', sans-serif;
+}
+
+#bbb{
+	z-index: 90;
+}
+
+.wrapper{
+	position: fixed;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	z-index: 5;
+}
+
+.btn_wrapper{
+	position: absolute;
+	/*display: flex;*/
+	/*align-items: center;*/
+	width: 92%;
+	max-width: 400px;
+	height: 8%;
+	max-height: 50px;
+	bottom: 10px;
+}
+
+#btn{
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border-style: none;
+	background: linear-gradient(180deg, #859bf3, #d068fb);
+	border-radius: 0.5em;
+	outline: none;
+	cursor: pointer;
+	z-index: 90;
+	/*box-shadow: 0 0 20em 1em rgb(0, 0, 0);*/
+}
+
+#btn img{
+	height: 30%;
+}
+
+#menu_wrapper{
+	position: absolute;
+	width: 92%;
+	max-width: 400px;
+	height: 40%;
+	max-height: 420px;
+	bottom: 30%;
+	z-index: 4;
+}
+
+@media screen and (max-height: 720px){
+	#menu_wrapper{
+		bottom: 50%;
+	}
+}
+
+@media screen and (min-height: 1000px){
+	#menu_wrapper{
+		bottom: 10%;
+	}
+}
+
+#menu{
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex-wrap: nowrap;
+	min-height: 420px;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(180deg, #bdd8f9, #dec1fd);
+	border-radius: 0.5em;
+	z-index: 98;
+}
+
+#menu h1{
+	font-size: 2em;
+	margin: 1% 0;
+}
+
+.name{
+	margin: 1%;
+	font-size: 10vw;
+}
+
+.watch_image{
+	width: 30%;
+	height: 30%;
+	background-color: #444;
+}
+
+.clocks,
+.colors{
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	flex-wrap: wrap;
+	width: 100%;
+	height: 45%;
+	/*background: #777;*/
+}
+
+.clock{
+/*	width: 40%;
+	max-width: 80px;
+	height: 100%;
+	max-height: 60px;*/
+	margin: 3% 3%;
+	/*background: #999;*/
+	border-style: none;
+	cursor: pointer;
+}
+
+.clock img{
+	max-width: 90px;
+	height: auto;
+}
+
+.colors{
+	height: 30%;
+}
+
+.color{
+	width: 40%;
+	max-width: 80px;
+	height: 100%;
+	max-height: 60px;
+	margin: 0 3%;
+	border-style: none;
+	cursor: pointer;
+	border-radius: 100%;
+}
+
+.red{
+	background: #aa0000;
+}
+
+.black{
+	background: #020202;
+}
+
+.gold{
+	background: #aa9944;
+}
+
+.darkblue{
+	background: #214478;
+}
+
+.silver{
+	background: #888;
+}

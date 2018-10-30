@@ -1,0 +1,36 @@
+body{
+	margin: 0;
+	overflow: hidden;
+}
+
+#load{
+	position: fixed;
+	margin: auto;
+	width: 50px;
+	height: 50px;
+	border: 5px solid #BBB;
+	border-radius: 25px;
+	animation: anim1 5s ease -5s infinite;
+}
+
+@keyframes anim1{
+	0%{ transform: rotate(0deg); }
+	100%{ transform: rotate(360deg);  }
+}
+
+.menu{
+	position: fixed;
+	width: 100%;
+	height: 80px;
+	bottom: 0;
+	background-color: #BBD;
+}
+
+
+.arrow::before{
+	content: "";
+	width: 20px;
+	height: 20px;
+	border: 2px solid #000;
+	transform: rotate(45deg);
+}
